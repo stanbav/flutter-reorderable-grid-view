@@ -517,5 +517,49 @@ void main() {
       final expectedList = [5, 1, 0, 3, 2, 4];
       expect(actual, equals(expectedList));
     });
+
+    test(
+        'GIVEN items with 31 ints and a ReorderUpdateEntity referring to an '
+        'index outside them '
+        'WHEN calling reorderList '
+        'THEN should return the items unchanged', () {
+      // given
+      final givenItems = List.generate(31, (index) => index);
+      final givenOrderUpdateEntities = [
+        const ReorderUpdateEntity(oldIndex: 31, newIndex: 27),
+      ];
+
+      // when
+      final actual = controller.reorderList(
+        items: givenItems,
+        reorderUpdateEntities: givenOrderUpdateEntities,
+      );
+
+      // then
+      expect(actual, equals(givenItems));
+    });
+
+    test(
+        'GIVEN items with 3 ints and one out of range ReorderUpdateEntity '
+        'followed by a valid one '
+        'WHEN calling reorderList '
+        'THEN should skip the out of range entity and apply the valid one', () {
+      // given
+      final givenItems = [0, 1, 2];
+      final givenOrderUpdateEntities = [
+        const ReorderUpdateEntity(oldIndex: 0, newIndex: 5),
+        const ReorderUpdateEntity(oldIndex: 0, newIndex: 1),
+      ];
+
+      // when
+      final actual = controller.reorderList(
+        items: givenItems,
+        reorderUpdateEntities: givenOrderUpdateEntities,
+      );
+
+      // then
+      final expectedList = [1, 0, 2];
+      expect(actual, equals(expectedList));
+    });
   });
 }

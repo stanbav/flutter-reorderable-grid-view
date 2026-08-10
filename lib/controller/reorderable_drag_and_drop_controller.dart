@@ -391,6 +391,17 @@ class ReorderableDragAndDropController extends ReorderableController {
       final reorderLeftToRight = reorder.oldIndex < reorder.newIndex;
       final start = reorderLeftToRight ? reorder.oldIndex : reorder.newIndex;
       final end = reorderLeftToRight ? reorder.newIndex : reorder.oldIndex;
+
+      // The entities are built when the drag starts, but they are applied to
+      // whatever list the caller passes here. If that list got shorter in the
+      // meantime - it was rebuilt mid-drag, e.g. an upload finished or an item
+      // was removed - these indices point outside it and sublist throws a
+      // RangeError. That error surfaces during layout, so it takes down the
+      // widget tree rather than being catchable by the caller. A reorder cannot
+      // be applied to a list it was not computed against, so skip it and keep
+      // processing the remaining entities.
+      if (start < 0 || end >= updatedItems.length) continue;
+
       final sublist = updatedItems.sublist(start, end + 1);
       final child =
           reorderLeftToRight ? sublist.removeAt(0) : sublist.removeLast();
